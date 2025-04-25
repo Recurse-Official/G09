@@ -11,7 +11,23 @@ const emergencyAlerts = [
   { id: 3, urgency: 'Low', reason: 'Accident', location: { latitude: 37.79125, longitude: -122.4384 }, status: 'Open' },
 ];
 
+// Updated color palette to match FarmersDashboard, ForumsScreen, Layout, PurchaseDetails, FoodFridges, and OldAgeHomesDashboard
+const COLORS = {
+  background: '#F9FAFB',   // Soft gray-white background
+  primary: '#10B981',     // Vibrant green for primary actions
+  secondary: '#6EE7B7',   // Lighter green for gradients
+  accent: '#F59E0B',      // Warm yellow for highlights
+  textPrimary: '#1F2937', // Dark gray for primary text
+  textSecondary: '#6B7280', // Lighter gray for secondary text
+  white: '#FFFFFF',
+  cardBg: '#FFFFFF',
+  error: '#EF4444',
+  success: '#10B981',
+  darkOverlay: 'rgba(17, 24, 39, 0.6)',
+};
+
 const EmergencyAlerts = () => {
+  const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [responseText, setResponseText] = useState('');
@@ -34,174 +50,170 @@ const EmergencyAlerts = () => {
 
   const handleRespondToAlert = (alert) => {
     setSelectedAlert(alert);
-    setShowModal(true); // Show the modal when a user wants to respond to an alert
+    setShowModal(true);
   };
 
   const handleSubmitResponse = () => {
     console.log('Response submitted:', { alertId: selectedAlert.id, responseText, alertStatus });
-    setShowModal(false); // Close modal after submission
+    setShowModal(false);
     setResponseText('');
     setAlertStatus('In Progress');
   };
 
   const handleRaiseEmergency = () => {
-    // Handle submitting the emergency form (e.g., send data to a server)
     console.log('Emergency Raised:', emergencyData);
   };
-  const { t } = useTranslation();
+
   return (
-    <ScrollView style={styles.container}>
-      <Language/>
-    {/* 1. Raise an Emergency Section */}
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t('emergencyAlerts.raiseEmergency')}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder={t('emergencyAlerts.urgencyLevel')}
-        value={emergencyData.urgency}
-        onChangeText={(text) => setEmergencyData({ ...emergencyData, urgency: text })}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder={t('emergencyAlerts.reason')}
-        value={emergencyData.reason}
-        onChangeText={(text) => setEmergencyData({ ...emergencyData, reason: text })}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder={t('emergencyAlerts.location')}
-        value={emergencyData.location}
-        onChangeText={(text) => setEmergencyData({ ...emergencyData, location: text })}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder={t('emergencyAlerts.contactInfo')}
-        value={emergencyData.contactInfo}
-        onChangeText={(text) => setEmergencyData({ ...emergencyData, contactInfo: text })}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder={t('emergencyAlerts.additionalDetails')}
-        value={emergencyData.additionalDetails}
-        onChangeText={(text) => setEmergencyData({ ...emergencyData, additionalDetails: text })}
-        multiline
-      />
-      <TouchableOpacity style={styles.submitButton} onPress={handleRaiseEmergency}>
-        <Text style={styles.submitButtonText}>{t('emergencyAlerts.submit')}</Text>
-      </TouchableOpacity>
-    </View>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <Language />
 
-    {/* 2. Track Your Alerts Section */}
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t('emergencyAlerts.trackAlerts')}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {emergencyAlerts.map((alert) => (
-          <View key={alert.id} style={styles.card}>
-            <Text style={styles.cardText}>{`${t('emergencyAlerts.reason')}: ${alert.reason}`}</Text>
-            <Text style={styles.cardText}>{`${t('emergencyAlerts.urgencyLevel')}: ${alert.urgency}`}</Text>
-            <Text style={styles.cardText}>{`${t('emergencyAlerts.alertStatus')}: ${alert.status}`}</Text>
-            <TouchableOpacity
-              style={styles.responseButton}
-              onPress={() => handleRespondToAlert(alert)} // Show modal on response click
-            >
-              <Text style={styles.responseButtonText}>{t('emergencyAlerts.respond')}</Text>
-            </TouchableOpacity>
-          </View>
+      {/* 1. Raise an Emergency Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('emergencyAlerts.raiseEmergency')}</Text>
+        {[
+          { placeholder: t('emergencyAlerts.urgencyLevel'), value: emergencyData.urgency, key: 'urgency' },
+          { placeholder: t('emergencyAlerts.reason'), value: emergencyData.reason, key: 'reason' },
+          { placeholder: t('emergencyAlerts.location'), value: emergencyData.location, key: 'location' },
+          { placeholder: t('emergencyAlerts.contactInfo'), value: emergencyData.contactInfo, key: 'contactInfo' },
+          { placeholder: t('emergencyAlerts.additionalDetails'), value: emergencyData.additionalDetails, key: 'additionalDetails', multiline: true },
+        ].map((input, index) => (
+          <TextInput
+            key={index}
+            style={[styles.input, input.multiline && styles.textArea]}
+            placeholder={input.placeholder}
+            placeholderTextColor={COLORS.textSecondary}
+            value={input.value}
+            onChangeText={(text) => setEmergencyData({ ...emergencyData, [input.key]: text })}
+            multiline={input.multiline}
+            numberOfLines={input.multiline ? 4 : 1}
+          />
         ))}
-      </ScrollView>
+        <TouchableOpacity style={styles.submitButton} onPress={handleRaiseEmergency}>
+          <Text style={styles.submitButtonText}>{t('emergencyAlerts.submit')}</Text>
+        </TouchableOpacity>
+      </View>
 
-      <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: 37.78825,
-            longitude: -122.4324,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}
-        >
-          {emergencyAlerts.map((alert, index) => (
-            <Marker
-              key={index}
-              coordinate={alert.location}
-              title={alert.reason}
-              description={`${t('emergencyAlerts.urgencyLevel')}: ${alert.urgency}`}
-            />
+      {/* 2. Track Your Alerts Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('emergencyAlerts.trackAlerts')}</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.cardScroll}>
+          {emergencyAlerts.map((alert) => (
+            <View key={alert.id} style={styles.card}>
+              <Text style={styles.cardText}>{`${t('emergencyAlerts.reason')}: ${alert.reason}`}</Text>
+              <Text style={styles.cardText}>{`${t('emergencyAlerts.urgencyLevel')}: ${alert.urgency}`}</Text>
+              <Text style={styles.cardText}>{`${t('emergencyAlerts.alertStatus')}: ${alert.status}`}</Text>
+              <TouchableOpacity
+                style={styles.responseButton}
+                onPress={() => handleRespondToAlert(alert)}
+              >
+                <Text style={styles.responseButtonText}>{t('emergencyAlerts.respond')}</Text>
+              </TouchableOpacity>
+            </View>
           ))}
-        </MapView>
-      </View>
-    </View>
+        </ScrollView>
 
-    {/* 3. Impact Metrics Section */}
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t('emergencyAlerts.impactMetrics')}</Text>
-      <View style={styles.metricCard}>
-        <Text style={styles.metricText}>{`${t('emergencyAlerts.totalAlerts')}: ${impactMetrics.totalAlerts}`}</Text>
-        <Text style={styles.metricText}>{`${t('emergencyAlerts.avgResponseTime')}: ${impactMetrics.avgResponseTime}`}</Text>
-        <Text style={styles.metricText}>{`${t('emergencyAlerts.beneficiaries')}: ${impactMetrics.beneficiaries}`}</Text>
-        <Text style={styles.metricText}>{`${t('emergencyAlerts.mealsDelivered')}: ${impactMetrics.mealsDelivered}`}</Text>
-      </View>
-    </View>
-
-    {/* 4. Respond to Alert Modal */}
-    <Modal
-      visible={showModal}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={() => setShowModal(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          {selectedAlert && (
-            <>
-              <Text style={styles.modalTitle}>{t('emergencyAlerts.respond')}</Text>
-              <Text style={styles.modalText}>{`${t('emergencyAlerts.reason')}: ${selectedAlert.reason}`}</Text>
-              <Text style={styles.modalText}>{`${t('emergencyAlerts.urgencyLevel')}: ${selectedAlert.urgency}`}</Text>
-              <Text style={styles.modalText}>{`${t('emergencyAlerts.alertStatus')}: ${selectedAlert.status}`}</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder={t('emergencyAlerts.submitResponse')}
-                value={responseText}
-                onChangeText={setResponseText}
-                multiline
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: 37.78825,
+              longitude: -122.4324,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+          >
+            {emergencyAlerts.map((alert, index) => (
+              <Marker
+                key={index}
+                coordinate={alert.location}
+                title={alert.reason}
+                description={`${t('emergencyAlerts.urgencyLevel')}: ${alert.urgency}`}
               />
-
-              <Text style={styles.modalText}>{t('emergencyAlerts.alertStatus')}:</Text>
-              <View style={styles.pickerContainer}>
-                <TouchableOpacity
-                  style={styles.statusButton}
-                  onPress={() => setAlertStatus('In Progress')}
-                >
-                  <Text style={styles.statusButtonText}>{t('emergencyAlerts.inProgress')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.statusButton}
-                  onPress={() => setAlertStatus('Resolved')}
-                >
-                  <Text style={styles.statusButtonText}>{t('emergencyAlerts.resolved')}</Text>
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity
-                style={styles.submitButton}
-                onPress={handleSubmitResponse}
-              >
-                <Text style={styles.submitButtonText}>{t('emergencyAlerts.submitResponse')}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setShowModal(false)} // Close the modal
-              >
-                <Text style={styles.cancelButtonText}>{t('emergencyAlerts.cancel')}</Text>
-              </TouchableOpacity>
-            </>
-          )}
+            ))}
+          </MapView>
         </View>
       </View>
-    </Modal>
-  </ScrollView>
+
+      {/* 3. Impact Metrics Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('emergencyAlerts.impactMetrics')}</Text>
+        <View style={styles.metricCard}>
+          {[
+            { label: t('emergencyAlerts.totalAlerts'), value: impactMetrics.totalAlerts },
+            { label: t('emergencyAlerts.avgResponseTime'), value: impactMetrics.avgResponseTime },
+            { label: t('emergencyAlerts.beneficiaries'), value: impactMetrics.beneficiaries },
+            { label: t('emergencyAlerts.mealsDelivered'), value: impactMetrics.mealsDelivered },
+          ].map((metric, index) => (
+            <Text key={index} style={styles.metricText}>{`${metric.label}: ${metric.value}`}</Text>
+          ))}
+        </View>
+      </View>
+
+      {/* 4. Respond to Alert Modal */}
+      <Modal
+        visible={showModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            {selectedAlert && (
+              <>
+                <Text style={styles.modalTitle}>{t('emergencyAlerts.respond')}</Text>
+                <Text style={styles.modalText}>{`${t('emergencyAlerts.reason')}: ${selectedAlert.reason}`}</Text>
+                <Text style={styles.modalText}>{`${t('emergencyAlerts.urgencyLevel')}: ${selectedAlert.urgency}`}</Text>
+                <Text style={styles.modalText}>{`${t('emergencyAlerts.alertStatus')}: ${selectedAlert.status}`}</Text>
+
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  placeholder={t('emergencyAlerts.submitResponse')}
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={responseText}
+                  onChangeText={setResponseText}
+                  multiline
+                  numberOfLines={4}
+                />
+
+                <Text style={styles.modalText}>{t('emergencyAlerts.alertStatus')}:</Text>
+                <View style={styles.pickerContainer}>
+                  {[
+                    { value: 'In Progress', label: t('emergencyAlerts.inProgress') },
+                    { value: 'Resolved', label: t('emergencyAlerts.resolved') },
+                  ].map((status) => (
+                    <TouchableOpacity
+                      key={status.value}
+                      style={[styles.statusButton, alertStatus === status.value && styles.selectedStatusButton]}
+                      onPress={() => setAlertStatus(status.value)}
+                    >
+                      <Text style={[styles.statusButtonText, alertStatus === status.value && styles.selectedStatusButtonText]}>
+                        {status.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setShowModal(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>{t('emergencyAlerts.cancel')}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.submitButton}
+                    onPress={handleSubmitResponse}
+                  >
+                    <Text style={styles.submitButtonText}>{t('emergencyAlerts.submitResponse')}</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+    </ScrollView>
   );
 };
 
@@ -209,7 +221,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: COLORS.background,
   },
   section: {
     marginBottom: 24,
@@ -217,116 +229,161 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 8,
+    color: COLORS.textPrimary,
+    marginBottom: 12,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.cardBg,
     padding: 16,
-    borderRadius: 8,
-    marginHorizontal: 8,
+    borderRadius: 12,
+    marginRight: 12,
     alignItems: 'center',
     width: 250,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
   },
   cardText: {
     fontSize: 14,
-    marginBottom: 4,
+    color: COLORS.textPrimary,
+    marginBottom: 8,
   },
   responseButton: {
-    backgroundColor: '#FFA500',
-    paddingVertical: 8,
+    backgroundColor: COLORS.accent,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginTop: 8,
     alignItems: 'center',
+    elevation: 4,
   },
   responseButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  cardScroll: {
+    marginBottom: 16,
   },
   mapContainer: {
     height: 300,
-    marginTop: 16,
-    borderRadius: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
   },
   map: {
     flex: 1,
   },
   input: {
-    backgroundColor: '#fff',
-    height: 40,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    backgroundColor: COLORS.white,
+    padding: 12,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 8,
+    borderColor: COLORS.textSecondary,
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    marginBottom: 12,
+    elevation: 4,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
   },
   submitButton: {
-    backgroundColor: '#3B82F6',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 16,
+    elevation: 4,
   },
   submitButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
   },
   metricCard: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.cardBg,
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
   },
   metricText: {
     fontSize: 14,
+    color: COLORS.textPrimary,
     marginBottom: 8,
   },
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: COLORS.darkOverlay,
   },
   modalContainer: {
-    width: '80%',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 8,
+    width: '85%',
+    backgroundColor: COLORS.cardBg,
+    padding: 20,
+    borderRadius: 16,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
+    color: COLORS.textPrimary,
+    marginBottom: 12,
   },
   modalText: {
     fontSize: 14,
+    color: COLORS.textPrimary,
     marginBottom: 8,
   },
   pickerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 16,
+    gap: 12,
   },
   statusButton: {
-    backgroundColor: '#3B82F6',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    flex: 1,
+    backgroundColor: COLORS.white,
+    padding: 12,
+    borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+    elevation: 4,
+  },
+  selectedStatusButton: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   statusButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  selectedStatusButtonText: {
+    color: COLORS.white,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
   },
   cancelButton: {
-    backgroundColor: '#ccc',
-    paddingVertical: 8,
-    borderRadius: 8,
+    padding: 12,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 8,
   },
   cancelButtonText: {
-    color: '#333',
-    fontWeight: 'bold',
+    color: COLORS.textSecondary,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

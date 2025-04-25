@@ -1,10 +1,9 @@
-"use client"; 
+"use client";
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { Picker } from '@react-native-picker/picker'; // Used for drop-downs
-import MapView, { Marker } from 'react-native-maps';  // Import MapView and Marker from react-native-maps
+import { Picker } from '@react-native-picker/picker';
+import MapView, { Marker } from 'react-native-maps';
 import { useTranslation } from "react-i18next";
-import { Language } from '../../components/language';
 
 // Sample data for fridges
 const fridgeLocations = [
@@ -12,6 +11,21 @@ const fridgeLocations = [
   { id: 2, name: 'Fridge 2', latitude: 37.78845, longitude: -122.4344 },
   { id: 3, name: 'Fridge 3', latitude: 37.78925, longitude: -122.4354 },
 ];
+
+// Updated color palette to match FarmersDashboard, ForumsScreen, Layout, and PurchaseDetails
+const COLORS = {
+  background: '#F9FAFB',   // Soft gray-white background
+  primary: '#10B981',     // Vibrant green for primary actions
+  secondary: '#6EE7B7',   // Lighter green for gradients
+  accent: '#F59E0B',      // Warm yellow for highlights
+  textPrimary: '#1F2937', // Dark gray for primary text
+  textSecondary: '#6B7280', // Lighter gray for secondary text
+  white: '#FFFFFF',
+  cardBg: '#FFFFFF',
+  error: '#EF4444',
+  success: '#10B981',
+  darkOverlay: 'rgba(17, 24, 39, 0.6)',
+};
 
 const FoodFridges = () => {
   const { t } = useTranslation();
@@ -21,15 +35,13 @@ const FoodFridges = () => {
 
   // Stats data for the top cards
   const stats = [
-    { label: 'Total Fridges', value: '50' },
-    { label: 'Meals Donated', value: '1,200' },
-    { label: 'Fridges Near You', value: '10' },
+    { label: t('foodFridges.stats.totalFridges'), value: '50' },
+    { label: t('foodFridges.stats.mealsDonated'), value: '1,200' },
+    { label: t('foodFridges.stats.fridgesNearYou'), value: '10' },
   ];
 
   return (
-<ScrollView style={styles.container}>
-      <Language />
-      
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header Section */}
       <View style={styles.header}>
         <Text style={styles.title}>{t('foodFridges.header')}</Text>
@@ -59,7 +71,6 @@ const FoodFridges = () => {
             longitudeDelta: 0.0421,
           }}
         >
-          {/* Markers for fridges */}
           {fridgeLocations.map((fridge) => (
             <Marker
               key={fridge.id}
@@ -76,6 +87,7 @@ const FoodFridges = () => {
         <TextInput
           style={styles.searchInput}
           placeholder={t('foodFridges.findFridgeSection.searchPlaceholder')}
+          placeholderTextColor={COLORS.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -87,36 +99,41 @@ const FoodFridges = () => {
         <TextInput
           style={styles.searchInput}
           placeholder={t('foodFridges.donateFoodSection.mealDetailsPlaceholder')}
+          placeholderTextColor={COLORS.textSecondary}
         />
 
         {/* Serve For Picker */}
         <Text style={styles.pickerLabel}>{t('foodFridges.donateFoodSection.serveForLabel')}</Text>
-        <Picker
-          selectedValue={serveFor}
-          style={styles.picker}
-          onValueChange={(itemValue) => setServeFor(itemValue)}
-        >
-          <Picker.Item label={t('foodFridges.donateFoodSection.serveForOptions.select')} value="" />
-          <Picker.Item label={t('foodFridges.donateFoodSection.serveForOptions.1')} value="1" />
-          <Picker.Item label={t('foodFridges.donateFoodSection.serveForOptions.2')} value="2" />
-          <Picker.Item label={t('foodFridges.donateFoodSection.serveForOptions.3')} value="3" />
-        </Picker>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={serveFor}
+            style={styles.picker}
+            onValueChange={(itemValue) => setServeFor(itemValue)}
+          >
+            <Picker.Item label={t('foodFridges.donateFoodSection.serveForOptions.select')} value="" />
+            <Picker.Item label={t('foodFridges.donateFoodSection.serveForOptions.1')} value="1" />
+            <Picker.Item label={t('foodFridges.donateFoodSection.serveForOptions.2')} value="2" />
+            <Picker.Item label={t('foodFridges.donateFoodSection.serveForOptions.3')} value="3" />
+          </Picker>
+        </View>
 
         {/* Expire Time */}
         <Text style={styles.pickerLabel}>{t('foodFridges.donateFoodSection.expireTimeLabel')}</Text>
         <View style={styles.expireTimeContainer}>
-          <TouchableOpacity
-            style={[styles.donateButton, expireTime === 'days' && { backgroundColor: '#3B82F6' }]}
-            onPress={() => setExpireTime('days')}
-          >
-            <Text style={styles.donateButtonText}>{t('foodFridges.donateFoodSection.expireTimeOptions.days')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.donateButton, expireTime === 'hrs' && { backgroundColor: '#3B82F6' }]}
-            onPress={() => setExpireTime('hrs')}
-          >
-            <Text style={styles.donateButtonText}>{t('foodFridges.donateFoodSection.expireTimeOptions.hours')}</Text>
-          </TouchableOpacity>
+          {[
+            { value: 'days', label: t('foodFridges.donateFoodSection.expireTimeOptions.days') },
+            { value: 'hrs', label: t('foodFridges.donateFoodSection.expireTimeOptions.hours') },
+          ].map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[styles.expireButton, expireTime === option.value && styles.selectedExpireButton]}
+              onPress={() => setExpireTime(option.value)}
+            >
+              <Text style={[styles.expireButtonText, expireTime === option.value && styles.selectedExpireButtonText]}>
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
         {/* Donate Button */}
@@ -128,116 +145,142 @@ const FoodFridges = () => {
   );
 };
 
-// Define some styles for the layout
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#F3F4F6',  // Background color
-    marginTop:20,
+    backgroundColor: COLORS.background,
   },
   header: {
-    
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 16,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
+    color: COLORS.textPrimary,
   },
   statsCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 16,
-    backgroundColor: '#E5E7EB', // Tailwind 'bg-gray-200'
-    borderRadius: 8,
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 12,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
-    elevation: 5,
+    elevation: 4,
   },
   statBox: {
     alignItems: 'center',
-    marginHorizontal: 8,
+    flex: 1,
   },
   cardText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
+    color: COLORS.textPrimary,
   },
   cardLabel: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+    textAlign: 'center',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 24,
+    color: COLORS.textPrimary,
+    marginTop: 16,
+    marginBottom: 12,
   },
   mapContainer: {
     height: 300,
-    marginTop: 16,
-    borderRadius: 8,
+    marginBottom: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
   },
   map: {
     flex: 1,
-    borderRadius: 8,
   },
   searchContainer: {
-    marginTop: 16,
-    backgroundColor: 'white',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 10,
     marginBottom: 16,
   },
   searchInput: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 12,
     fontSize: 16,
-    borderColor:'#ccc',
-    borderWidth:1,
-    borderRadius:3,
-
+    color: COLORS.textPrimary,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+    elevation: 4,
   },
   donateSection: {
-    marginTop: 24,
     padding: 16,
-    backgroundColor: 'white',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 12,
     marginBottom: 24,
-  },
-  donateButton: {
-    backgroundColor: '#3B82F6', // Tailwind 'bg-blue-500'
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  donateButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    elevation: 4,
   },
   pickerLabel: {
-    marginTop: 16,
-    fontSize: 16,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  pickerContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+    overflow: 'hidden',
+    elevation: 4,
   },
   picker: {
     height: 50,
-    width: '100%',
-    borderRadius: 8,
-    borderColor: '#E5E7EB',
-    borderWidth: 1,
+    color: COLORS.textPrimary,
   },
   expireTimeContainer: {
     flexDirection: 'row',
     marginTop: 8,
     justifyContent: 'space-between',
+    gap: 12,
+  },
+  expireButton: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+    elevation: 4,
+  },
+  selectedExpireButton: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  expireButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  selectedExpireButtonText: {
+    color: COLORS.white,
+  },
+  donateButton: {
+    backgroundColor: COLORS.primary,
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 16,
+    alignItems: 'center',
+    elevation: 4,
+  },
+  donateButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

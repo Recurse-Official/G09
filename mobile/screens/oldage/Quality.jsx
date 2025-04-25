@@ -2,149 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { Language } from '../../components/language';
 
+// Updated color palette to match other screens
+const COLORS = {
+  background: '#F9FAFB',   // Soft gray-white background
+  primary: '#10B981',     // Vibrant green for primary actions
+  secondary: '#6EE7B7',   // Lighter green for gradients
+  accent: '#F59E0B',      // Warm yellow for highlights
+  textPrimary: '#1F2937', // Dark gray for primary text
+  textSecondary: '#6B7280', // Lighter gray for secondary text
+  white: '#FFFFFF',
+  cardBg: '#FFFFFF',
+  error: '#EF4444',
+  success: '#10B981',
+  darkOverlay: 'rgba(17, 24, 39, 0.6)',
+};
 
 const Quality = () => {
-  const styles = StyleSheet.create({
-    screen: {
-      paddingTop: 50,
-      paddingLeft: 20,
-      marginBottom: 30,
-    },
-    title: {
-      marginTop: 10,
-      fontSize: 30,
-      fontWeight: '800',
-    },
-    des: {
-      lineHeight: 20,
-      marginTop: 10,
-      fontSize: 15,
-      fontWeight: '500',
-    },
-    sub: {
-      marginTop: 30,
-      fontSize: 25,
-      fontWeight: '800',
-    },
-    container: {
-      padding: 16,
-    },
-    confirmButton: {
-      backgroundColor: '#007bff',
-      paddingVertical: 12,
-      borderRadius: 8,
-      marginBottom: 10,
-    },
-    reportButton: {
-      borderColor: 'black',
-      borderWidth: 1,
-      backgroundColor: '#f0f0f0',
-      paddingVertical: 12,
-      borderRadius: 8,
-    },
-    buttonText: {
-      color: '#fff',
-      textAlign: 'center',
-      fontSize: 16,
-    },
-    buttonText2: {
-      color: '#000',
-      textAlign: 'center',
-      fontSize: 16,
-    },
-    dropdownButton: {
-      borderColor: 'black',
-      borderWidth: 1,
-      backgroundColor: '#f0f0f0', // Light gray background
-      paddingHorizontal: 16, // Horizontal padding
-      paddingVertical: 12, // Vertical padding
-      borderRadius: 8, // Rounded corners
-      flexDirection: 'row', // Arrange elements horizontally
-      alignItems: 'center', // Align elements vertically in center
-    },
-    dropdownText: {
-      fontSize: 16, // Text size
-      color: '#333', // Text color
-      flex: 1, // Take up remaining space in the row
-    },
-    dropdownArrow: {
-      fontSize: 18, // Arrow size
-      color: '#333', // Arrow color
-    },
-    dropdownOptions: {
-      zIndex: 10,
-      backgroundColor: '#fff', // White background for options
-      position: 'absolute', // Position the options menu below the button
-      top: 50, // Adjust the top position from the button
-      left: 15, // Align options menu to the left
-      width: '100%', // Make the options menu full width
-      borderRadius: 8, // Rounded corners for the options menu
-      shadowColor: '#000', // Shadow for a more defined look
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4, // Adjust shadow blur
-    },
-    dropdownOption: {
-      paddingHorizontal: 16, // Horizontal padding for options
-      paddingVertical: 10, // Vertical padding for options
-      borderBottomWidth: 1, // Border between options
-      borderBottomColor: '#ddd', // Border color
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 10,
-    },
-    commentInput: {
-      borderWidth: 1,
-      borderColor: '#ccc',
-      borderRadius: 8,
-      padding: 10,
-      marginBottom: 10,
-      height: 100,
-    },
-    upload: {
-      marginBottom: 20,
-      alignItems: 'center',
-    },
-    uploadImageContainer: {
-      width: '100%',  // Make sure it's responsive
-      height: 100,    // Limit the height of the image container
-      borderRadius: 8,
-      overflow: 'hidden',  // Prevent the image from overflowing the container
-      justifyContent: 'center', 
-      alignItems: 'center',
-    },
-    uploadImage: {
-      width: '100%',
-      height: '100%',
-      resizeMode: 'cover',  // This will make the image cover the entire container without overflowing
-    },
-    uploadButton: {
-      marginTop: 10,
-      height: 100,
-      width: 300,
-      paddingVertical: 12,
-      paddingHorizontal: 25,
-      borderColor: '#ccc',
-      borderWidth: 1,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    uploadText: {
-      fontSize: 16,
-    },
-    card:{
-        width:350,
-        backgroundColor:'#fff',
-        borderRadius:10,
-        padding:10,
-        marginBottom:15
-    }
-  });
-
   // State hooks
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState('Food Quality');
@@ -180,9 +55,7 @@ const Quality = () => {
       quality: 1,
     });
 
-    console.log(result); // Log the result for debugging
     if (!result.cancelled) {
-      // Sanitize the URI to ensure it is correctly passed to the Image component
       const imageUri = result.assets[0].uri;
       setSelectedImage(imageUri);
     }
@@ -200,38 +73,44 @@ const Quality = () => {
   }, []);
 
   return (
-    <ScrollView style={styles.screen}>
+    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
+    
+
       {/* Title and Icon */}
-      <Icon name="restaurant" size={24} color="black" />
-      <Text style={styles.title}>Food Quality Verification</Text>
-      <Text style={styles.des}>
+      <View style={styles.header}>
+        <Icon name="restaurant" size={24} color={COLORS.textPrimary} />
+        <Text style={styles.title}>Food Quality Verification</Text>
+      </View>
+      <Text style={styles.description}>
         Your feedback helps us improve food redistribution services. Please take a moment to share your experience with the food delivery you received.
       </Text>
 
       {/* Delivery Confirmation Section */}
-      <Text style={styles.sub}>Delivery Confirmation</Text>
+      <Text style={styles.sectionTitle}>Delivery Confirmation</Text>
       <View style={styles.container}>
         <TouchableOpacity style={styles.confirmButton}>
           <Text style={styles.buttonText}>Confirm Delivery</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.reportButton}>
-          <Text style={styles.buttonText2}>Report an Issue</Text>
-        </TouchableOpacity>
+       
       </View>
 
       {/* Feedback Form Section */}
-      <Text style={styles.sub}>Feedback Form</Text>
+      <Text style={styles.sectionTitle}>Feedback Form</Text>
       <View style={styles.container}>
         {/* Dropdown Menu for Issue Selection */}
         <TouchableOpacity style={styles.dropdownButton} onPress={toggleDropdown}>
           <Text style={styles.dropdownText}>{selectedOption}</Text>
-          <Text style={styles.dropdownArrow}>▼</Text>
+          <Icon name="chevron-down" size={18} color={COLORS.textPrimary} />
         </TouchableOpacity>
         {isOpen && (
           <View style={styles.dropdownOptions}>
             {options.map((option) => (
-              <TouchableOpacity key={option} style={styles.dropdownOption} onPress={() => handleOptionSelect(option)}>
-                <Text>{option}</Text>
+              <TouchableOpacity
+                key={option}
+                style={styles.dropdownOption}
+                onPress={() => handleOptionSelect(option)}
+              >
+                <Text style={styles.dropdownOptionText}>{option}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -240,10 +119,11 @@ const Quality = () => {
 
       {/* Additional Comments Section */}
       <View style={styles.container}>
-        <Text style={styles.sectionTitle}>Additional Comments</Text>
+        <Text style={styles.sectionSubtitle}>Additional Comments</Text>
         <TextInput
           style={styles.commentInput}
           placeholder="Enter your comments here"
+          placeholderTextColor={COLORS.textSecondary}
           multiline={true}
           value={comments}
           onChangeText={setComments}
@@ -254,49 +134,225 @@ const Quality = () => {
       </View>
 
       {/* Photo Upload Section */}
-      <Text style={styles.sub}>Photo Upload</Text>
-      <Text style={styles.des}>
+      <Text style={styles.sectionTitle}>Photo Upload</Text>
+      <Text style={styles.description}>
         You can upload photos to help us visually verify the quality of the food you received. This is optional but highly appreciated.
       </Text>
-
       <View style={styles.upload}>
         <TouchableOpacity onPress={launchImagePickerHandler} style={styles.uploadButton}>
           {selectedImage ? (
-            // If an image is selected, show the uploaded image and change the button text
             <View style={styles.uploadImageContainer}>
               <Image source={{ uri: selectedImage }} style={styles.uploadImage} />
-           
             </View>
           ) : (
-            // If no image is selected, show the "Upload Image" text
             <Text style={styles.uploadText}>Upload Image</Text>
           )}
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.sub}>Real-Time Reporting</Text>
-      <Text style={styles.des}>If you encounter any issues with your food delivery, please report them immediately. An automated alert will be sent to the admin for resolution.</Text>
+      {/* Real-Time Reporting Section */}
+      <Text style={styles.sectionTitle}>Real-Time Reporting</Text>
+      <Text style={styles.description}>
+        If you encounter any issues with your food delivery, please report them immediately. An automated alert will be sent to the admin for resolution.
+      </Text>
       <View style={styles.card}>
-        <View style={{display:'flex', flexDirection:'row', gap:10, alignItems:'center'}}>
-            <Image source={require('../../assets/92.png')} style={{ width: 75, height: 75, borderRadius: 100 }} />
-            <View>
-            <Text style={{fontSize:20,fontWeight:600}}>Average Food Quality</Text>
-            <Text style={{fontSize:15,fontWeight:200,}}>3.9</Text>
-            </View>
+        <View style={styles.cardContent}>
+          <Image source={require('../../assets/92.png')} style={styles.cardImage} />
+          <View>
+            <Text style={styles.cardTitle}>Average Food Quality</Text>
+            <Text style={styles.cardSubtitle}>3.9</Text>
+          </View>
         </View>
-        
+      </View>
+      <View style={[styles.card, { marginBottom: 100 }]}>
+        <View style={styles.cardContent}>
+          <Image source={require('../../assets/93.png')} style={styles.cardImage} />
+          <View>
+            <Text style={styles.cardTitle}>Most Common Issue</Text>
+            <Text style={styles.cardSubtitle}>Quality, Packaging</Text>
+          </View>
         </View>
-        <View style={[styles.card, {marginBottom:100}]}>
-        <View style={{display:'flex', flexDirection:'row', gap:10, alignItems:'center'}}>
-            <Image source={require('../../assets/93.png')} style={{ width: 75, height: 75, borderRadius: 100 }} />
-            <View>
-            <Text style={{fontSize:20,fontWeight:600}}>Most common issue</Text>
-            <Text style={{fontSize:15,fontWeight:200,}}>Quality, package</Text>
-            </View>
-        </View>
-        </View>
+      </View>
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: COLORS.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+    marginLeft: 8,
+  },
+  description: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  sectionSubtitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginBottom: 8,
+  },
+  container: {
+    marginBottom: 16,
+  },
+  confirmButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    elevation: 4,
+    marginBottom: 12,
+  },
+  reportButton: {
+    backgroundColor: COLORS.white,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+    elevation: 4,
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonTextSecondary: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  dropdownButton: {
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+    elevation: 4,
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    flex: 1,
+  },
+  dropdownOptions: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    marginTop: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+  },
+  dropdownOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.textSecondary,
+  },
+  dropdownOptionText: {
+    fontSize: 14,
+    color: COLORS.textPrimary,
+  },
+  commentInput: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    height: 100,
+    textAlignVertical: 'top',
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    elevation: 4,
+  },
+  upload: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  uploadImageContainer: {
+    width: 300,
+    height: 100,
+    borderRadius: 12,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  uploadImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  uploadButton: {
+    width: 300,
+    height: 100,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.white,
+    elevation: 4,
+  },
+  uploadText: {
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    fontWeight: '600',
+  },
+  card: {
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+  },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  cardImage: {
+    width: 75,
+    height: 75,
+    borderRadius: 37.5,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+});
 
 export default Quality;

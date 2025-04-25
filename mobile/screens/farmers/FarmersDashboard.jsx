@@ -13,24 +13,38 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/FontAwesome";
-
 import { Picker } from "@react-native-picker/picker";
-import Layout from "./Layout";
-import { Language } from "../../components/language";
 import { useTranslation } from "react-i18next";
+import { Language } from "../../components/language";
+
+// Updated color palette for a modern look
+const COLORS = {
+  background: '#F9FAFB',   // Soft gray-white background
+  primary: '#10B981',     // Vibrant green for primary actions
+  secondary: '#6EE7B7',   // Lighter green for gradients
+  accent: '#F59E0B',      // Warm yellow for highlights
+  textPrimary: '#1F2937', // Dark gray for primary text
+  textSecondary: '#6B7280', // Lighter gray for secondary text
+  white: '#FFFFFF',
+  cardBg: '#FFFFFF',
+  error: '#EF4444',
+  success: '#10B981',
+  darkOverlay: 'rgba(17, 24, 39, 0.6)',
+};
 
 const FarmersDashboard = () => {
   const navigation = useNavigation();
+  const { t } = useTranslation();
 
   // States for produce and stats
   const [produceType, setProduceType] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [priceOffer, setPriceOffer] = useState("");
-  const [activityType, setActivityType] = useState("sale"); // 'sale' or 'donation'
-  const [selectedOrganization, setSelectedOrganization] = useState(""); // NGO/Foodbank
-
-  // States for showing success message
+  const [activityType, setActivityType] = useState("sale");
+  const [selectedOrganization, setSelectedOrganization] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedPurchase, setSelectedPurchase] = useState(null);
 
   // Stats for pending/completed purchases
   const [pendingPurchases, setPendingPurchases] = useState([
@@ -43,10 +57,6 @@ const FarmersDashboard = () => {
     { id: 2, produceType: "Cabbages", buyer: "Jane Smith", price: "$6", quantity: "50kg", status: "completed" },
   ]);
 
-  // Modal for updating pending purchase details
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedPurchase, setSelectedPurchase] = useState(null);
-
   const organizations = [
     { label: "FoodBank A", value: "foodbank_a" },
     { label: "NGO B", value: "ngo_b" },
@@ -54,25 +64,21 @@ const FarmersDashboard = () => {
     { label: "NGO D", value: "ngo_d" },
   ];
 
-  // Handle posting produce (sale or donation)
   const handlePostProduce = () => {
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
   };
 
-  // Open modal for updating pending purchase
   const openModalForPendingPurchase = (purchase) => {
     setSelectedPurchase(purchase);
     setIsModalVisible(true);
   };
 
-  // Close the modal
   const closeModal = () => {
     setIsModalVisible(false);
     setSelectedPurchase(null);
   };
 
-  // Update the pending purchase with new details
   const updatePendingPurchase = () => {
     const updatedPurchases = pendingPurchases.map((purchase) =>
       purchase.id === selectedPurchase.id ? selectedPurchase : purchase
@@ -81,104 +87,124 @@ const FarmersDashboard = () => {
     closeModal();
   };
 
-  const { t } = useTranslation();
-
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
+       
+
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Ionicons name="home-outline" size={24} color="black" />
+            <Ionicons name="leaf" size={24} color={COLORS.primary} />
             <Text style={styles.headerTitle}>{t("farmers.title")}</Text>
           </View>
           <View style={styles.headerRight}>
-            <Language />
-            <TouchableOpacity>
-              <Icon name="bell-o" size={25} color="#000" />
+          
+            <TouchableOpacity style={styles.notificationButton}>
+              <Icon name="bell" size={20} color={COLORS.textPrimary} />
             </TouchableOpacity>
           </View>
         </View>
+        
 
-        <Text style={styles.welcome}>{t("farmers.welcome")}, John Smith!</Text>
+        <Text style={styles.welcome}>{t("farmers.welcome")}, John Smith! <Language /></Text>
 
         {/* Farmer Stats */}
         <View style={styles.statsContainer}>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>500 kg</Text>
-            <Text style={styles.statLabel}>{t("farmers.donated")}</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>5,000 {t("farmers.meals")}</Text>
-            <Text style={styles.statLabel}>{t("farmers.meals")}</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>$200</Text>
-            <Text style={styles.statLabel}>{t("farmers.tax")}</Text>
-          </View>
+          {[
+            { icon: "leaf-outline", value: "500 kg", label: t("farmers.donated") },
+            { icon: "restaurant-outline", value: "5,000", label: t("farmers.meals") },
+            { icon: "cash-outline", value: "$200", label: t("farmers.tax") },
+          ].map((stat, index) => (
+            <View key={index} style={styles.statBox}>
+              <Ionicons name={stat.icon} size={24} color={COLORS.primary} />
+              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
+            </View>
+          ))}
         </View>
 
         {/* Post Produce Form */}
         <View style={styles.formContainer}>
           <Text style={styles.sectionTitle}>{t("farmers.post")}</Text>
-          <Text style={styles.label}>{t("farmers.crop-type")}</Text>
-          <TextInput
-            style={styles.input}
-            value={produceType}
-            onChangeText={setProduceType}
-            placeholder={t("farmers.crop-type-placeholder")}
-          />
-
-          <Text style={styles.label}>{t("farmers.additional-info")}</Text>
-          <TextInput
-            style={styles.input}
-            value={additionalNotes}
-            onChangeText={setAdditionalNotes}
-            placeholder={t("farmers.additional-info-placeholder")}
-            multiline
-          />
-
-          <Text style={styles.label}>{t("farmers.activity-type")}</Text>
-          <Picker
-            selectedValue={activityType}
-            style={styles.picker}
-            onValueChange={(itemValue) => setActivityType(itemValue)}
-          >
-            <Picker.Item label={t("farmers.activity-type-options.sale")} value="sale" />
-            <Picker.Item label={t("farmers.activity-type-options.donation")} value="donation" />
-          </Picker>
-
-          <Text style={styles.label}>{t("farmers.price-offered")}</Text>
-          {activityType === "sale" && (
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t("farmers.crop-type")}</Text>
             <TextInput
               style={styles.input}
-              value={priceOffer}
-              onChangeText={setPriceOffer}
-              placeholder={t("farmers.price-offered-placeholder")}
-              keyboardType="numeric"
+              value={produceType}
+              onChangeText={setProduceType}
+              placeholder={t("farmers.crop-type-placeholder")}
+              placeholderTextColor={COLORS.textSecondary}
             />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t("farmers.additional-info")}</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={additionalNotes}
+              onChangeText={setAdditionalNotes}
+              placeholder={t("farmers.additional-info-placeholder")}
+              placeholderTextColor={COLORS.textSecondary}
+              multiline
+              numberOfLines={4}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t("farmers.activity-type")}</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={activityType}
+                style={styles.picker}
+                onValueChange={(itemValue) => setActivityType(itemValue)}
+              >
+                <Picker.Item label={t("farmers.activity-type-options.sale")} value="sale" />
+                <Picker.Item label={t("farmers.activity-type-options.donation")} value="donation" />
+              </Picker>
+            </View>
+          </View>
+
+          {activityType === "sale" && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>{t("farmers.price-offered")}</Text>
+              <TextInput
+                style={styles.input}
+                value={priceOffer}
+                onChangeText={setPriceOffer}
+                placeholder={t("farmers.price-offered-placeholder")}
+                placeholderTextColor={COLORS.textSecondary}
+                keyboardType="numeric"
+              />
+            </View>
           )}
 
-          <Text style={styles.label}>{t("farmers.select-ngo-foodbank")}</Text>
-          <Picker
-            selectedValue={selectedOrganization}
-            style={styles.picker}
-            onValueChange={setSelectedOrganization}
-          >
-            {organizations.map((org) => (
-              <Picker.Item key={org.value} label={org.label} value={org.value} />
-            ))}
-          </Picker>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t("farmers.select-ngo-foodbank")}</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedOrganization}
+                style={styles.picker}
+                onValueChange={setSelectedOrganization}
+              >
+                <Picker.Item label="Select an organization" value="" />
+                {organizations.map((org) => (
+                  <Picker.Item key={org.value} label={org.label} value={org.value} />
+                ))}
+              </Picker>
+            </View>
+          </View>
 
-          <TouchableOpacity style={styles.button} onPress={handlePostProduce}>
-            <Text style={styles.buttonText}>{t("farmers.submit")}</Text>
+          <TouchableOpacity style={styles.submitButton} onPress={handlePostProduce}>
+            <Text style={styles.submitButtonText}>{t("farmers.submit")}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Success Message */}
         {showSuccess && (
           <View style={styles.successMessage}>
-            <Ionicons name="checkmark-circle" size={24} color="green" />
+            <Ionicons name="checkmark-circle" size={20} color={COLORS.white} />
             <Text style={styles.successText}>
               {activityType === "sale"
                 ? t("farmers.success")
@@ -189,51 +215,52 @@ const FarmersDashboard = () => {
 
         {/* Pending Purchases */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {t("farmers.pending-purchases")}
-          </Text>
+          <Text style={styles.sectionTitle}>{t("farmers.pending-purchases")}</Text>
           {pendingPurchases.map((purchase) => (
             <TouchableOpacity
               key={purchase.id}
-              style={styles.purchaseItem}
+              style={styles.purchaseCard}
               onPress={() => openModalForPendingPurchase(purchase)}
             >
-              <Text style={styles.purchaseText}>{purchase.produceType}</Text>
-              <Text style={styles.purchaseText}>
-                {t("farmers.price")}:
-                {purchase.price}
-              </Text>
-              <Text style={styles.purchaseText}>
-                {t("farmers.organization")}:
-                {purchase.organization}
-              </Text>
+              <View style={styles.purchaseHeader}>
+                <Text style={styles.purchaseTitle}>{purchase.produceType}</Text>
+                <Text style={styles.purchasePrice}>{purchase.price}</Text>
+              </View>
+              <View style={styles.purchaseDetails}>
+                <Text style={styles.purchaseText}>
+                  {t("farmers.organization")}: {purchase.organization}
+                </Text>
+                <Text style={styles.purchaseText}>
+                  {t("farmers.notes")}: {purchase.notes}
+                </Text>
+              </View>
+              <View style={styles.purchaseStatus}>
+                <Text style={styles.statusText}>{t("farmers.pending")}</Text>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Completed Purchases */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {t("farmers.completed-purchases")}
-          </Text>
+          <Text style={styles.sectionTitle}>{t("farmers.completed-purchases")}</Text>
           {completedPurchases.map((purchase) => (
-            <View key={purchase.id} style={styles.purchaseItem}>
-              <Text style={styles.purchaseText}>
-                {t("farmers.crop-type")}:
-                {purchase.produceType}
-              </Text>
-              <Text style={styles.purchaseText}>
-                {t("farmers.buyer")}:
-                {purchase.buyer}
-              </Text>
-              <Text style={styles.purchaseText}>
-                {t("farmers.price")}:
-                {purchase.price}
-              </Text>
-              <Text style={styles.purchaseText}>
-                {t("farmers.quantity")}:
-                {purchase.quantity}
-              </Text>
+            <View key={purchase.id} style={styles.purchaseCard}>
+              <View style={styles.purchaseHeader}>
+                <Text style={styles.purchaseTitle}>{purchase.produceType}</Text>
+                <Text style={styles.purchasePrice}>{purchase.price}</Text>
+              </View>
+              <View style={styles.purchaseDetails}>
+                <Text style={styles.purchaseText}>
+                  {t("farmers.buyer")}: {purchase.buyer}
+                </Text>
+                <Text style={styles.purchaseText}>
+                  {t("farmers.quantity")}: {purchase.quantity}
+                </Text>
+              </View>
+              <View style={[styles.purchaseStatus, styles.completedStatus]}>
+                <Text style={styles.statusText}>{t("farmers.completed")}</Text>
+              </View>
             </View>
           ))}
         </View>
@@ -248,64 +275,23 @@ const FarmersDashboard = () => {
           onRequestClose={closeModal}
         >
           <View style={styles.modalBackground}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Update Pending Purchase</Text>
-
-              <Text style={styles.modalLabel}>Produce Type</Text>
-              <TextInput
-                style={styles.modalInput}
-                value={selectedPurchase.produceType}
-                onChangeText={(text) =>
-                  setSelectedPurchase({ ...selectedPurchase, produceType: text })
-                }
-              />
-
-              <Text style={styles.modalLabel}>Price</Text>
-              <TextInput
-                style={styles.modalInput}
-                value={selectedPurchase.price}
-                onChangeText={(text) =>
-                  setSelectedPurchase({ ...selectedPurchase, price: text })
-                }
-              />
-
-              <Text style={styles.modalLabel}>
-                {t("farmers.additional-notes")}
-              </Text>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{t("farmers.update-purchase")}</Text>
               <TextInput
                 style={styles.modalInput}
                 value={selectedPurchase.notes}
-                onChangeText={(text) =>
-                  setSelectedPurchase({ ...selectedPurchase, notes: text })
-                }
+                onChangeText={(text) => setSelectedPurchase({ ...selectedPurchase, notes: text })}
+                placeholder={t("farmers.update-notes")}
+                placeholderTextColor={COLORS.textSecondary}
               />
-
-              <Text style={styles.modalLabel}>
-                {t("farmers.select-organization")}
-              </Text>
-              <Picker
-                selectedValue={selectedPurchase.organization}
-                style={styles.picker}
-                onValueChange={(itemValue) =>
-                  setSelectedPurchase({ ...selectedPurchase, organization: itemValue })
-                }
-              >
-                {organizations.map((org) => (
-                  <Picker.Item key={org.value} label={org.label} value={org.value} />
-                ))}
-              </Picker>
-
-              <TouchableOpacity style={styles.button} onPress={updatePendingPurchase}>
-                <Text style={styles.buttonText}>
-                  {t("farmers.update-purchase")}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.button} onPress={closeModal}>
-                <Text style={styles.buttonText}>
-                  {t("farmers.close")}
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={styles.modalButton} onPress={closeModal}>
+                  <Text style={styles.modalButtonText}>{t("farmers.cancel")}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.modalButton, styles.updateButton]} onPress={updatePendingPurchase}>
+                  <Text style={styles.updateButtonText}>{t("farmers.update")}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>
@@ -317,146 +303,242 @@ const FarmersDashboard = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    backgroundColor: COLORS.white,
+    elevation: 4,
   },
   headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    width: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginLeft: 12,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+    marginLeft: 8,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  notificationButton: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: COLORS.cardBg,
   },
   welcome: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
     padding: 16,
   },
   statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     padding: 16,
+    gap: 12,
   },
   statBox: {
-    alignItems: "center",
-    backgroundColor: "white",
-    margin: 10,
-    padding: 10,
-    borderRadius: 8,
+    flex: 1,
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    elevation: 4,
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+    marginTop: 8,
   },
   statLabel: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+    textAlign: 'center',
   },
   formContainer: {
-    padding: 16,
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 16,
+    padding: 20,
+    margin: 16,
+    elevation: 4,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+    marginBottom: 16,
+  },
+  inputGroup: {
     marginBottom: 16,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
     marginBottom: 8,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
     padding: 12,
-    marginBottom: 16,
-    backgroundColor: "#f5f5f5",
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  pickerContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+    overflow: 'hidden',
   },
   picker: {
     height: 50,
-    width: "100%",
-    marginBottom: 16,
+    color: COLORS.textPrimary,
   },
-  button: {
-    backgroundColor: "#00BCD4",
+  submitButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
     padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 8,
+    alignItems: 'center',
+    marginTop: 12,
+    elevation: 4,
   },
-  buttonText: {
-    color: "#fff",
+  submitButtonText: {
+    color: COLORS.white,
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   successMessage: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#e6ffe6",
-    padding: 16,
-    margin: 16,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.success,
+    padding: 12,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    elevation: 4,
   },
   successText: {
-    flex: 1,
-    marginHorizontal: 8,
+    color: COLORS.white,
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '500',
   },
   section: {
     padding: 16,
   },
-  purchaseItem: {
-    padding: 12,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 8,
-    marginBottom: 10,
+  purchaseCard: {
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 4,
+  },
+  purchaseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  purchaseTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+  },
+  purchasePrice: {
+    fontSize: 16,
+    color: COLORS.accent,
+    fontWeight: '600',
+  },
+  purchaseDetails: {
+    marginBottom: 12,
   },
   purchaseText: {
-    fontSize: 16,
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  purchaseStatus: {
+    backgroundColor: COLORS.textSecondary,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  completedStatus: {
+    backgroundColor: COLORS.success,
+  },
+  statusText: {
+    fontSize: 12,
+    color: COLORS.white,
+    fontWeight: '500',
   },
   modalBackground: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: COLORS.darkOverlay,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  modalContainer: {
-    backgroundColor: "white",
+  modalContent: {
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 16,
     padding: 20,
-    borderRadius: 8,
-    width: Dimensions.get("window").width - 40,
+    width: '85%',
+    elevation: 4,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
     marginBottom: 16,
-  },
-  modalLabel: {
-    fontSize: 16,
-    marginBottom: 8,
   },
   modalInput: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
     padding: 12,
+    fontSize: 16,
+    color: COLORS.textPrimary,
     marginBottom: 16,
-    backgroundColor: "#f5f5f5",
+    borderWidth: 1,
+    borderColor: COLORS.textSecondary,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  modalButton: {
+    padding: 10,
+    borderRadius: 8,
+  },
+  modalButtonText: {
+    color: COLORS.textSecondary,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  updateButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+  },
+  updateButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

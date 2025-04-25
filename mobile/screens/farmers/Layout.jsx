@@ -5,6 +5,21 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 const { width } = Dimensions.get('window');
 
+// Updated color palette to match FarmersDashboard and ForumsScreen
+const COLORS = {
+  background: '#F9FAFB',   // Soft gray-white background
+  primary: '#10B981',     // Vibrant green for primary actions
+  secondary: '#6EE7B7',   // Lighter green for gradients
+  accent: '#F59E0B',      // Warm yellow for highlights
+  textPrimary: '#1F2937', // Dark gray for primary text
+  textSecondary: '#6B7280', // Lighter gray for secondary text
+  white: '#FFFFFF',
+  cardBg: '#FFFFFF',
+  error: '#EF4444',
+  success: '#10B981',
+  darkOverlay: 'rgba(17, 24, 39, 0.6)',
+};
+
 const Footer = ({ navigation }) => {
   const route = useRoute();
   const [activeTab, setActiveTab] = useState('FarmersDashboard');
@@ -17,32 +32,29 @@ const Footer = ({ navigation }) => {
 
   return (
     <View style={styles.footer}>
-      {/* Farmers Dashboard Tab */}
-      <TouchableOpacity 
-        style={styles.footerItem} 
-        onPress={() => navigation.navigate('FarmersDashboard')}>
-        <Icon name="home-outline" size={24} color={isActive('FarmersDashboard') ? '#007bff' : '#777'} />
-        <Text style={[styles.footerText, isActive('FarmersDashboard') && styles.activeText]}>Dashboard</Text>
-      </TouchableOpacity>
-      <TouchableOpacity 
-        style={styles.footerItem} 
-        onPress={() => navigation.navigate('FarmersForum')}>
-        <Icon name="chatbox-outline" size={24} color={isActive('FarmersForum') ? '#007bff' : '#777'} />
-        <Text style={[styles.footerText, isActive('FarmersForum') && styles.activeText]}>Forum</Text>
-      </TouchableOpacity>
-      {/* notification Tab */}
-      <TouchableOpacity
-        style={styles.footerItem}
-        onPress={() => navigation.navigate('Notifications')}>
-        <Icon name="notifications-outline" size={24} color={isActive('Notifications') ? '#007bff' : '#777'} />
-        <Text style={[styles.footerText, isActive('Notifications') && styles.activeText]}>Notifications</Text>
-      </TouchableOpacity>
-      <TouchableOpacity 
-        style={styles.footerItem} 
-        onPress={() => navigation.navigate('FarmerResources')}>
-        <Icon name="file-tray-outline" size={24} color={isActive('FarmerResources') ? '#007bff' : '#777'} />
-        <Text style={[styles.footerText, isActive('FarmerResources') && styles.activeText]}>Resources</Text>
-      </TouchableOpacity>
+      {[
+        { name: 'FarmersDashboard', icon: 'home-outline', label: 'Dashboard' },
+        { name: 'FarmersForum', icon: 'chatbox-outline', label: 'Forum' },
+        { name: 'Notifications', icon: 'notifications-outline', label: 'Notifications' },
+        { name: 'FarmerResources', icon: 'file-tray-outline', label: 'Resources' },
+      ].map((tab) => (
+        <TouchableOpacity
+          key={tab.name}
+          style={styles.footerItem}
+          onPress={() => navigation.navigate(tab.name)}
+        >
+          <View style={[styles.iconContainer, isActive(tab.name) && styles.activeIconContainer]}>
+            <Icon
+              name={tab.icon}
+              size={22}
+              color={isActive(tab.name) ? COLORS.primary : COLORS.textSecondary}
+            />
+          </View>
+          <Text style={[styles.footerText, isActive(tab.name) && styles.activeText]}>
+            {tab.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 };
@@ -59,10 +71,11 @@ const Layout = ({ children = null, navigation = {} }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   content: {
     flex: 1,
-    paddingBottom: 80, // Adjust padding to accommodate the footer height
+    paddingBottom: 80, // Adjusted to match footer height
   },
   footer: {
     position: 'absolute',
@@ -72,22 +85,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    paddingVertical: 10,
+    backgroundColor: COLORS.white,
+    paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
+    borderTopColor: COLORS.textSecondary,
+    elevation: 4,
   },
   footerItem: {
     alignItems: 'center',
+    flex: 1,
+  },
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+    backgroundColor: COLORS.cardBg,
+  },
+  activeIconContainer: {
+    backgroundColor: COLORS.secondary,
   },
   footerText: {
-    color: '#777',
+    color: COLORS.textSecondary,
     fontSize: 12,
-    marginTop: 4,
+    fontWeight: '500',
     textAlign: 'center',
   },
   activeText: {
-    color: '#007bff',
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 });
 

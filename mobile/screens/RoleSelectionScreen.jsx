@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
+// screens/RoleSelectionScreen.js
+
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-  Animated,
   ScrollView,
+  Animated,
   Dimensions,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 
@@ -34,13 +35,7 @@ const roles = [
     icon: 'restaurant',
     description: 'Donate excess food and reduce waste',
     color: COLORS.primary,
-  },
-  {
-    id: 'ngos',
-    title: 'NGOs',
-    icon: 'people',
-    description: 'Receive and distribute food to those in need',
-    color: COLORS.secondary,
+    gradient: [COLORS.primary, COLORS.secondary],
   },
   {
     id: 'volunteer',
@@ -48,25 +43,27 @@ const roles = [
     icon: 'heart',
     description: 'Help in food collection and distribution',
     color: COLORS.accent,
+    gradient: [COLORS.accent, COLORS.primary],
   },
   {
     id: 'organizations',
     title: 'Old Age/Orphanage Homes',
     icon: 'home',
     description: 'Receive food donations for your residents',
-    color: COLORS.primary,
+    color: COLORS.secondary,
+    gradient: [COLORS.secondary, COLORS.primary],
   },
   {
     id: 'farmers',
     title: 'Farmers',
     icon: 'leaf',
     description: 'Donate surplus produce to those in need',
-    color: COLORS.secondary,
+    color: COLORS.primary,
+    gradient: [COLORS.primary, COLORS.accent],
   },
 ];
 
-const RegisterScreen = () => {
-  const [selectedRole, setSelectedRole] = useState(null);
+const RoleSelectionScreen = () => {
   const navigation = useNavigation();
 
   // Animation values
@@ -97,16 +94,22 @@ const RegisterScreen = () => {
 
   const handleRoleSelect = (role) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setSelectedRole(role);
-  };
-
-  const handleContinue = () => {
-    if (selectedRole) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      navigation.navigate(selectedRole.id);
-    } else {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Please select a role');
+    
+    switch (role.id) {
+      case 'restaurants':
+        navigation.navigate('HomePage');
+        break;
+      case 'volunteer':
+        navigation.navigate('VolunteerDashboard');
+        break;
+      case 'organizations':
+        navigation.navigate('Oldage');
+        break;
+      case 'farmers':
+        navigation.navigate('FarmersDashboard');
+        break;
+      default:
+        break;
     }
   };
 
@@ -130,7 +133,7 @@ const RegisterScreen = () => {
         ]}
       >
         <View style={styles.header}>
-          <Ionicons name="person-add" size={40} color={COLORS.white} />
+          <Ionicons name="people" size={40} color={COLORS.white} />
           <Text style={styles.title}>Choose Your Role</Text>
           <Text style={styles.subtitle}>Select the role that best describes you</Text>
         </View>
@@ -139,49 +142,42 @@ const RegisterScreen = () => {
           style={styles.rolesContainer}
           showsVerticalScrollIndicator={false}
         >
-          {roles.map((role) => (
-            <TouchableOpacity
+          {roles.map((role, index) => (
+            <Animated.View
               key={role.id}
               style={[
-                styles.roleCard,
-                selectedRole?.id === role.id && styles.selectedRoleCard,
-                { borderColor: role.color }
+                styles.roleCardContainer,
+                {
+                  opacity: fadeAnim,
+                  transform: [
+                    { translateY: slideAnim },
+                    { scale: scaleAnim }
+                  ],
+                  animationDelay: index * 100,
+                }
               ]}
-              onPress={() => handleRoleSelect(role)}
             >
-              <View style={[styles.roleIconContainer, { backgroundColor: role.color }]}>
-                <Ionicons name={role.icon} size={24} color={COLORS.white} />
-              </View>
-              <View style={styles.roleContent}>
-                <Text style={styles.roleTitle}>{role.title}</Text>
-                <Text style={styles.roleDescription}>{role.description}</Text>
-              </View>
-              {selectedRole?.id === role.id && (
-                <View style={[styles.checkmarkContainer, { backgroundColor: role.color }]}>
-                  <Ionicons name="checkmark" size={20} color={COLORS.white} />
-                </View>
-              )}
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.roleCard}
+                onPress={() => handleRoleSelect(role)}
+              >
+                <LinearGradient
+                  colors={role.gradient}
+                  style={styles.roleCardGradient}
+                >
+                  <View style={styles.roleIconContainer}>
+                    <Ionicons name={role.icon} size={30} color={COLORS.white} />
+                  </View>
+                  <View style={styles.roleContent}>
+                    <Text style={styles.roleTitle}>{role.title}</Text>
+                    <Text style={styles.roleDescription}>{role.description}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={24} color={COLORS.white} />
+                </LinearGradient>
+              </TouchableOpacity>
+            </Animated.View>
           ))}
         </ScrollView>
-
-        <TouchableOpacity
-          style={[
-            styles.continueButton,
-            !selectedRole && styles.disabledButton
-          ]}
-          onPress={handleContinue}
-          disabled={!selectedRole}
-        >
-          <LinearGradient
-            colors={selectedRole ? [COLORS.accent, COLORS.primary] : [COLORS.secondary, COLORS.secondary]}
-            style={styles.continueButtonGradient}
-          >
-            <Text style={styles.continueButtonText}>
-              Continue as {selectedRole?.title || 'Select Role'}
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
       </Animated.View>
     </View>
   );
@@ -223,29 +219,28 @@ const styles = StyleSheet.create({
   rolesContainer: {
     flex: 1,
   },
-  roleCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 15,
+  roleCardContainer: {
     marginBottom: 15,
-    borderWidth: 2,
-    borderColor: 'transparent',
+  },
+  roleCard: {
+    borderRadius: 12,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  selectedRoleCard: {
-    borderWidth: 2,
-    transform: [{ scale: 1.02 }],
+  roleCardGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
   },
   roleIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -254,46 +249,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   roleTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
-    color: COLORS.primary,
+    color: COLORS.white,
     marginBottom: 5,
   },
   roleDescription: {
     fontSize: 14,
-    color: COLORS.secondary,
-  },
-  checkmarkContainer: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  continueButton: {
-    height: 50,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  disabledButton: {
-    opacity: 0.7,
-  },
-  continueButtonGradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  continueButtonText: {
     color: COLORS.white,
-    fontSize: 18,
-    fontWeight: '600',
+    opacity: 0.9,
   },
 });
 
-export default RegisterScreen;
+export default RoleSelectionScreen;

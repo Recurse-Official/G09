@@ -1,306 +1,530 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet, ScrollView, Image, ImageBackground, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';  // Import FontAwesome icons (or any other icon set)
+import React, { useEffect } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+  ImageBackground,
+  Dimensions,
+  Animated,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
+
+// Updated color palette
+const COLORS = {
+  background: '#F9FAFB',  // Soft gray background
+  primary: '#10B981',     // Vibrant green (aligned with previous components)
+  secondary: '#34D399',   // Lighter green
+  accent: '#F59E0B',      // Warm yellow
+  text: '#1F2A44',        // Dark gray for text
+  white: '#FFFFFF',
+  lightGray: '#E5E7EB',
+  darkOverlay: 'rgba(17, 24, 39, 0.7)',
+};
 
 const LandingPage = () => {
   const navigation = useNavigation();
+  const fadeAnim = new Animated.Value(0);
+  const slideAnim = new Animated.Value(50);
+  const cardAnim = new Animated.Value(0);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.stagger(200, [
+        Animated.timing(cardAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+  }, []);
+
   return (
-    <ScrollView style={styles.container}>
-      {/* Image Background Section with Overlay Text */}
-
-      <View style={styles.buttonSection}>
-      <Image style={styles.logo} source={require('../assets/wText.png')} />
-        <Text style={styles.sectionTitle}>Be A Part of the Change</Text>
-        <View style={styles.buttonContainer}>
-          {/* Sign Up Button */}
-          <TouchableOpacity 
-            style={styles.button}
-            onPress={() => navigation.navigate('LoginScreen')}
-          >
-            <Text style={styles.buttonText}>Sign Up</Text>
-          </TouchableOpacity>
-
-          {/* Donate Now Button */}
-          <TouchableOpacity 
-            style={[styles.button, styles.donateButton]}
-            onPress={() => alert('Donate Now pressed')}
-          >
-            <Text style={styles.buttonText}>Donate Now</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-
-      <ImageBackground 
-        source={require('../assets/0.png')}  // Placeholder for background image
-        style={styles.imageBackground}
-        imageStyle={styles.image}
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <Animated.View
+        style={[
+          styles.heroSection,
+          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+        ]}
       >
-        <View style={styles.overlay}>
-          <Text style={styles.subtitle}>Bridging Communities</Text>
-          <Text style={styles.mutedText}>The future of food rescue!</Text>
-        </View>
-      </ImageBackground>
+        <ImageBackground
+          source={require('../assets/0.png')}
+          style={styles.imageBackground}
+          imageStyle={styles.image}
+        >
+          <LinearGradient
+            colors={[COLORS.darkOverlay, COLORS.darkOverlay]}
+            style={styles.overlay}
+          >
+            <Image style={styles.logo} source={require('../assets/wText.png')} />
+            <Text style={styles.heroTitle}>Bridging Communities</Text>
+            <Text style={styles.heroSubtitle}>Empowering Food Rescue</Text>
+          </LinearGradient>
+        </ImageBackground>
+      </Animated.View>
 
-      {/* How It Works Section */}
+      <Animated.View
+        style={[
+          styles.buttonSection,
+          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+        ]}
+      >
+        <Text style={styles.sectionTitle}>Choose Your Role</Text>
+        <View style={styles.buttonContainer}>
+          {[
+            { name: 'Restaurant', icon: 'cutlery', route: 'HomePage' },
+            { name: 'Volunteer', icon: 'heart', route: 'VolunteerDashboard' },
+            { name: 'Oldage Home', icon: 'building', route: 'Oldage' },
+            { name: 'Farmer', icon: 'leaf', route: 'FarmersDashboard' },
+          ].map((role, index) => (
+            <Animated.View
+              key={role.name}
+              style={{ opacity: cardAnim, transform: [{ translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }] }}
+            >
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => navigation.navigate(role.route)}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={[COLORS.primary, COLORS.secondary]}
+                  style={styles.buttonGradient}
+                >
+                  <Icon name={role.icon} size={20} color={COLORS.white} style={styles.buttonIcon} />
+                  <Text style={styles.buttonText}>{`I am a ${role.name}`}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </Animated.View>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          style={[styles.donateButton, { backgroundColor: COLORS.accent }]}
+          onPress={() => alert('Donate Now pressed')}
+          activeOpacity={0.8}
+        >
+          <View style={styles.donateButtonContent}>
+            <Icon name="gift" size={20} color={COLORS.white} style={styles.buttonIcon} />
+            <Text style={styles.donateButtonText}>Donate Now</Text>
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>How It Works</Text>
-        <View style={styles.grid}>
-          <Card title="Restaurants" imageUrl={require('../assets/1.png')} />
-          <Card title="NGOs" imageUrl={require('../assets/3.png')} />
-          <Card title="Volunteers" imageUrl={require('../assets/4.png')} />
-          <Card title="Organizations" imageUrl={require('../assets/5.png')} />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.featureScroll}
+          contentContainerStyle={styles.featureScrollContent}
+        >
+          {[
+            { title: 'Restaurants', image: require('../assets/1.png'), icon: 'cutlery' },
+            { title: 'NGOs', image: require('../assets/3.png'), icon: 'building' },
+            { title: 'Volunteers', image: require('../assets/4.png'), icon: 'heart' },
+            { title: 'Organizations', image: require('../assets/5.png'), icon: 'users' },
+          ].map((feature, index) => (
+            <Animated.View
+              key={feature.title}
+              style={{ opacity: cardAnim, transform: [{ translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }] }}
+            >
+              <FeatureCard title={feature.title} imageUrl={feature.image} icon={feature.icon} />
+            </Animated.View>
+          ))}
+        </ScrollView>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Our Impact</Text>
+        <View style={styles.metricsContainer}>
+          {[
+            { icon: 'coffee', label: 'Meals Donated', value: '500,000' },
+            { icon: 'recycle', label: 'Food Saved', value: '12,000 kg' },
+            { icon: 'users', label: 'Volunteers', value: '1,500' },
+            { icon: 'home', label: 'NGOs', value: '200' },
+          ].map((metric, index) => (
+            <Animated.View
+              key={metric.label}
+              style={{ opacity: cardAnim, transform: [{ translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }] }}
+            >
+              <MetricCard icon={metric.icon} label={metric.label} value={metric.value} />
+            </Animated.View>
+          ))}
         </View>
       </View>
 
-      {/* Feature Highlights Section (using Horizontal ScrollView) */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Feature Highlights</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featureScroll}>
-          <Card title="Real-Time Food Tracking" imageUrl={require('../assets/6.png')} />
-          <Card title="Disaster Relief Mode" imageUrl={require('../assets/7.png')} />
-          <Card title="Community Food Fridges" imageUrl={require('../assets/8.png')} />
-          <Card title="Language Assistance" imageUrl={require('../assets/9.png')} />
-        </ScrollView>
-      </View>
-
-      {/* Impact Metrics Section as Carousel */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Impact Metrics</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.metricsScroll}>
-          <MetricCard icon="coffee" label="Meals" value="500,000" />
-          <MetricCard icon="recycle" label="Saved" value="12,000 kg" />
-          <MetricCard icon="users" label="Volunteers" value="1,500" />
-          <MetricCard icon="home" label="NGOs" value="200" />
-        </ScrollView>
-      </View>
-
-      {/* Leaderboard Section (Horizontal ScrollView) */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Leaderboard</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.metricsScroll}>
-          <Card title="Top Restaurants" content="Based on Meals Donated" imageUrl={require('../assets/10.png')} />
-          <Card title="Top Volunteers" content="Based on Hours Contributed" imageUrl={require('../assets/11.png')} />
-          <Card title="Top NGOs" content="Based on Meals Distributed" imageUrl={require('../assets/12.png')} />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.leaderboardScroll}
+          contentContainerStyle={styles.leaderboardScrollContent}
+        >
+          {[
+            { title: 'Top Restaurants', content: 'Meals Donated', image: require('../assets/10.png') },
+            { title: 'Top Volunteers', content: 'Hours Contributed', image: require('../assets/11.png') },
+            { title: 'Top NGOs', content: 'Meals Distributed', image: require('../assets/12.png') },
+          ].map((leader, index) => (
+            <Animated.View
+              key={leader.title}
+              style={{ opacity: cardAnim, transform: [{ translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }] }}
+            >
+              <LeaderboardCard title={leader.title} content={leader.content} imageUrl={leader.image} />
+            </Animated.View>
+          ))}
         </ScrollView>
       </View>
 
-      {/* Testimonials Section (Horizontal ScrollView) */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Testimonials</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.metricsScroll}>
-          <Card content="John Doe" subContent="Restaurant Owner" imageUrl={require('../assets/13.png')} />
-          <Card content="Jane Smith" subContent="Volunteer" imageUrl={require('../assets/14.png')} />
-          <Card content="NGO Team" subContent="NGO Representative" imageUrl={require('../assets/15.png')} />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.testimonialsScroll}
+          contentContainerStyle={styles.testimonialsScrollContent}
+        >
+          {[
+            { content: 'John Doe', subContent: 'Restaurant Owner', image: require('../assets/13.png') },
+            { content: 'Jane Smith', subContent: 'Volunteer', image: require('../assets/14.png') },
+            { content: 'NGO Team', subContent: 'NGO Representative', image: require('../assets/15.png') },
+          ].map((testimonial, index) => (
+            <Animated.View
+              key={testimonial.content}
+              style={{ opacity: cardAnim, transform: [{ translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }] }}
+            >
+              <TestimonialCard
+                content={testimonial.content}
+                subContent={testimonial.subContent}
+                imageUrl={testimonial.image}
+              />
+            </Animated.View>
+          ))}
         </ScrollView>
       </View>
 
-      {/* Call to Action Section */}
-
-
-      {/* Footer */}
-      <Text style={styles.footerText}>© 2023 Motiff AI. All rights reserved.</Text>
+      <Text style={styles.footerText}>© 2025 Motiff AI. All rights reserved.</Text>
     </ScrollView>
   );
 };
 
-// MetricCard Component with Circular Icon and Label
-const MetricCard = ({ icon, label, value }) => {
-  return (
-    <View style={styles.metricCard}>
-      <View style={styles.iconContainer}>
-        <Icon name={icon} size={40} color="black" style={styles.icon} />
-      </View>
-      <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={styles.metricValue}>{value}</Text>
+const FeatureCard = ({ title, imageUrl, icon }) => (
+  <TouchableOpacity style={styles.featureCard} activeOpacity={0.8}>
+    <Image source={imageUrl} style={styles.featureImage} />
+    <View style={styles.featureContent}>
+      <Icon name={icon} size={24} color={COLORS.primary} style={styles.featureIcon} />
+      <Text style={styles.featureTitle}>{title}</Text>
     </View>
-  );
-};
+  </TouchableOpacity>
+);
 
-// Card Component
-const Card = ({ title, content, subContent, imageUrl }) => {
-  return (
-    <View style={styles.card}>
-      {/* Image */}
-      {imageUrl && <Image source={imageUrl} style={styles.cardImage} />}
-      
-      {title && <Text style={styles.cardTitle}>{title}</Text>}
-      {content && <Text style={styles.cardContent}>{content}</Text>}
-      {subContent && <Text style={styles.cardSubContent}>{subContent}</Text>}
+const MetricCard = ({ icon, label, value }) => (
+  <TouchableOpacity style={styles.metricCard} activeOpacity={0.8}>
+    <Icon name={icon} size={28} color={COLORS.primary} style={styles.metricIcon} />
+    <Text style={styles.metricValue}>{value}</Text>
+    <Text style={styles.metricLabel}>{label}</Text>
+  </TouchableOpacity>
+);
+
+const LeaderboardCard = ({ title, content, imageUrl }) => (
+  <TouchableOpacity style={styles.leaderboardCard} activeOpacity={0.8}>
+    <Image source={imageUrl} style={styles.leaderboardImage} />
+    <View style={styles.leaderboardContent}>
+      <Text style={styles.leaderboardTitle}>{title}</Text>
+      <Text style={styles.leaderboardText}>{content}</Text>
     </View>
-  );
-};
+  </TouchableOpacity>
+);
 
-// Styles
+const TestimonialCard = ({ content, subContent, imageUrl }) => (
+  <TouchableOpacity style={styles.testimonialCard} activeOpacity={0.8}>
+    <Image source={imageUrl} style={styles.testimonialImage} />
+    <View style={styles.testimonialContent}>
+      <Text style={styles.testimonialText}>{content}</Text>
+      <Text style={styles.testimonialSubText}>{subContent}</Text>
+    </View>
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    marginTop:'10',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: COLORS.background,
+  },
+  heroSection: {
+    height: 420,
+    width: '100%',
   },
   imageBackground: {
+    flex: 1,
     width: '100%',
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    borderRadius: 10,
-    marginTop: 20,
   },
   image: {
-    borderRadius: 8,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   overlay: {
-    alignItems: 'left',
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Dark overlay to improve text visibility
-    width: '100%',
-    height: '100%',
-    padding: 10,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
   },
-  subtitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#fff',
-    marginTop: 10,
+  logo: {
+    width: 220,
+    height: 110,
+    resizeMode: 'contain',
+    marginBottom: 24,
   },
-  mutedText: {
-    fontSize: 16,
-    color: '#ccc',
-    marginTop: 5,
+  heroTitle: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: COLORS.white,
+    textAlign: 'center',
+    marginBottom: 12,
   },
-  section: {
-    marginTop: 20,
+  heroSubtitle: {
+    fontSize: 20,
+    color: COLORS.white,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  buttonSection: {
+    padding: 24,
+    backgroundColor: COLORS.background,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginTop: -24,
   },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 26,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 24,
+    textAlign: 'center',
   },
-  grid: {
+  buttonContainer: {
+    gap: 16,
+    alignItems: 'center',
+  },
+  button: {
+    width: width * 0.9,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  buttonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 18,
+  },
+  buttonIcon: {
+    marginRight: 12,
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  donateButton: {
+    width: width * 0.9,
+    marginTop: 24,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    alignSelf: 'center',
+  },
+  donateButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 18,
+  },
+  donateButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  section: {
+    padding: 24,
+  },
+  featureScroll: {
+    marginTop: 12,
+  },
+  featureScrollContent: {
+    paddingHorizontal: 12,
+  },
+  featureCard: {
+    width: 200,
+    height: 280,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginHorizontal: 8,
+    backgroundColor: COLORS.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  featureImage: {
+    width: '100%',
+    height: 150,
+    resizeMode: 'cover',
+  },
+  featureContent: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  featureIcon: {
+    marginBottom: 12,
+  },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    textAlign: 'center',
+  },
+  metricsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 10,
+    gap: 16,
   },
-  featureScroll: {
-    marginTop: 10,
-    paddingVertical: 10,
-  },
-  metricsScroll: {
-    marginTop: 10,
-    paddingVertical: 10,
-  },
-  card: {
-    padding: 1,
-    borderRadius: 8,
-    width: 150,  // Keep the width smaller for non-carousel cards like in How It Works
-    marginBottom: 20,
-    marginRight: 10,
-  },
-  cardImage: {
-    width: '100%',
-    height: 120,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  cardContent: {
-    fontSize: 14,
-    color: '#555',
-  },
-  cardSubContent: {
-    fontSize: 12,
-    color: '#777',
-  },
-  buttonSection: {
-    justifyContent:'center',
-    alignItems:'center',
-    height:500,
-    marginTop: 20,
-    alignItems: 'center', // Center align the buttons
-  },
-  buttonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'center',
+  metricCard: {
+    width: (width - 64) / 2,
+    padding: 20,
+    borderRadius: 16,
     alignItems: 'center',
-    marginTop: 10,
-    width: '100%', // Full width for buttons
+    backgroundColor: COLORS.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  button: {
-    backgroundColor: '#00dcf6', // Blue color for the Sign Up button
-    paddingVertical: 10,
-    paddingHorizontal: 40,
-    borderRadius: 10,  // Rounded corners
-    marginBottom: 10,
-    alignItems: 'center', // Center text inside button
-    justifyContent: 'center',
-    width:'90%' // For Android shadow
+  metricIcon: {
+    marginBottom: 12,
   },
-  donateButton: {
-    backgroundColor: '#dbe2e3', // Green color for Donate Now button
-    borderRadius: 10, // Keep border radius the same for a unified look
-    width: '90%', // Make the button slightly smaller
+  metricValue: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 8,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
+  metricLabel: {
+    fontSize: 14,
+    color: COLORS.text,
+    textAlign: 'center',
     fontWeight: '600',
+  },
+  leaderboardScroll: {
+    marginTop: 12,
+  },
+  leaderboardScrollContent: {
+    paddingHorizontal: 12,
+  },
+  leaderboardCard: {
+    width: 220,
+    height: 240,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginHorizontal: 8,
+    backgroundColor: COLORS.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  leaderboardImage: {
+    width: '100%',
+    height: 130,
+    resizeMode: 'cover',
+  },
+  leaderboardContent: {
+    padding: 16,
+  },
+  leaderboardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  leaderboardText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  testimonialsScroll: {
+    marginTop: 12,
+  },
+  testimonialsScrollContent: {
+    paddingHorizontal: 12,
+  },
+  testimonialCard: {
+    width: 220,
+    height: 240,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginHorizontal: 8,
+    backgroundColor: COLORS.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  testimonialImage: {
+    width: '100%',
+    height: 130,
+    resizeMode: 'cover',
+  },
+  testimonialContent: {
+    padding: 16,
+  },
+  testimonialText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  testimonialSubText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
   },
   footerText: {
     textAlign: 'center',
-    fontSize: 12,
-    color: '#aaa',
-    marginTop: 40,
+    color: COLORS.text,
+    padding: 24,
+    fontSize: 14,
+    fontWeight: '500',
   },
-
-  // Styles for the Impact Metrics section with Circular Icons
-  metricsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-    flexWrap: 'wrap',
-  },
-  metricCard: {
-    alignItems: 'center',
-    width: 170,  // Set width to 180 for consistency across carousel cards only
-    height:'5vh',
-    marginRight: 20,  // Space between cards
-    padding: 20,
-    backgroundColor: '#fff',  // White background for each card
-    borderRadius: 10,
-  },
-  iconContainer: {
-    backgroundColor: 'white', // Blue color for circle background
-    borderRadius: 50,
-    padding: 15,
-    marginBottom: 10,
-  },
-  icon: {
-    textAlign: 'center',
-  },
-  metricLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 5,
-  },
-  metricValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333',
-  },
-  logo:{
-    height:200,
-    width:200,
-    margin:30,
-  }
 });
 
 export default LandingPage;
